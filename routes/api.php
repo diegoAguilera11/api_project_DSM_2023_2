@@ -1,9 +1,10 @@
 <?php
 
+use App\Http\Controllers\auth\AuthController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\user\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\auth\AuthController;
-use App\Http\Controllers\user\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,4 +26,5 @@ Route::post('login', [AuthController::class, 'login']);
 
 Route::middleware('jwt.verify')->group(function () {
     Route::get('users', [UserController::class, 'index']);
+    Route::post('post', [PostController::class, 'store']);
 });
