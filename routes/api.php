@@ -21,10 +21,15 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
+Route::get('token/validate', [AuthController::class, 'verifyToken']);
+
+
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 
 Route::middleware('jwt.verify')->group(function () {
-    Route::get('users', [UserController::class, 'index']);
+    // Route::get('users', [UserController::class, 'index']);
     Route::post('post', [PostController::class, 'store']);
 });
+
+Route::get('users', [UserController::class, 'index']);

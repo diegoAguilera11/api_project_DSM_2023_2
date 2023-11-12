@@ -2,26 +2,22 @@
 
 namespace App\Http\Controllers\auth;
 
-use App\Models\User;
-use Illuminate\Http\Request;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Models\User;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-
-
     public function register(RegisterRequest $request)
     {
-
         // Creamos el usuario
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => $request->password
+            'password' => $request->password,
         ]);
 
         // Generar el token
@@ -35,59 +31,53 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request)
     {
-
         $credentials = $request->only('email', 'password');
-
         try {
-            //Intentar autenticar al usuario con las credenciales recibidas.
-            if (!$token = JWTAuth::attempt($credentials)) {
+            // Intentar autenticar al usuario con las credenciales recibidas.
+            if (!$tokenCheck = JWTAuth::attempt($credentials)) {
                 return response()->json([
-                    'message' => 'las credenciales ingresadas son incorrectas.'
-                ]);
+                    'message' => 'las credenciales ingresadas son incorrectas.',
+                ], 400);
             }
         } catch (JWTException $e) {
             return response()->json([
-                'error' => 'token no creado'
+                'error' => 'token no creado',
             ], 500);
         }
-        return response()->json(compact('token'));
-    }
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
+
+            // Obtenemos al usuario autenticado
+            $user = auth()->user();
+
+        return response()->json([
+            'token' => $tokenCheck,
+            'user' => $user,
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function verifyToken()
     {
-        //
-    }
+        try {
+            $token = JWTAuth::getToken();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+            if(!$token) {
+                return response()->json([
+                    'error', 'Token no proporcionado.'
+                ], 400);
+            }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+            // Verificar si el token es valido
+            $user = JWTAuth::parseToken()->authenticate();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+            // si el token es válido retornamos una respuesta exitosa
+            return response()->json([
+                'message' => 'Token válido',
+                'user' => $user
+            ]);
+
+
+        } catch (JWTException $e) {
+            // Manejo de excepciones
+            return response()->json(['error' => 'Token inválido'], 401);
+        }
     }
 }
