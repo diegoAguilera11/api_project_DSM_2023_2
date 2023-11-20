@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Post\StorePostRequest;
-use App\Http\Requests\Post\UpdatePostRequest;
 use App\Models\Post;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use App\Http\Requests\Post\StorePostRequest;
+use App\Http\Requests\Post\UpdatePostRequest;
 
 class PostController extends Controller
 {
@@ -22,25 +23,33 @@ class PostController extends Controller
     public function store(StorePostRequest $request)
     {
         // Obtener el token
-        $token = $request->header('Authorization');
+        try {
+            $token = $request->header('Authorization');
 
-        // Obtenemos al usuario autenticado
-        $user = JWTAuth::toUser($token);
+            // Obtenemos al usuario autenticado
+            $user = JWTAuth::toUser($token);
 
-        // Crear el post
-        $post = Post::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'pathImage' => $request->pathImage,
-            'likes' => $request->likes,
-            'comments' => $request->comments,
-            'user_id' => $user->id,
-        ]);
+            // Crear el post
+            $post = Post::create([
+                'title' => $request->title,
+                'description' => $request->description,
+                'pathImage' => $request->pathImage,
+                'likes' => 0,
+                'comments' => 0,
+                'user_id' => $user->id,
+            ]);
 
-        // Retornamos la respuesta
-        return response()->json([
-            'post' => $post,
-        ], 200);
+            // Retornamos la respuesta
+            return response()->json([
+                'post' => $post,
+            ], 200);
+
+        } catch (JWTException $e) {
+            // Retornamos la respuesta
+            return response()->json([
+                'message' => 'Oops ha ocurido un error...',
+            ], 500);
+        }
     }
 
     /**
