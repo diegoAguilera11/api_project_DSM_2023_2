@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Post;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Http\Requests\Post\StorePostRequest;
 use App\Http\Requests\Post\UpdatePostRequest;
+use App\Models\Post;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class PostController extends Controller
 {
@@ -15,6 +15,10 @@ class PostController extends Controller
      */
     public function index()
     {
+        // Obtener los posts del sistema
+        $posts = Post::orderBy('created_at', 'desc')->get();
+
+        return response()->json($posts, 200);
     }
 
     /**
@@ -43,7 +47,6 @@ class PostController extends Controller
             return response()->json([
                 'post' => $post,
             ], 200);
-
         } catch (JWTException $e) {
             // Retornamos la respuesta
             return response()->json([
